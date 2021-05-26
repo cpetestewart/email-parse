@@ -1,0 +1,11 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: email-parse
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: email-parse-sa
+  namespace: email-parse

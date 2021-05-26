@@ -1,0 +1,64 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: email-parse
+  namespace: email-parse
+spec:
+  minReadySeconds: 20
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 0
+  replicas: 1
+  selector:
+    matchLabels:
+      name: email-parse
+  template:
+    metadata:
+      labels:
+        name: email-parse
+        app: email-parse
+    spec:
+      serviceAccountName: email-parse-sa
+      containers:
+        - name: email-parse
+          image: "yourdockerhubid/email-parse:latest"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+              name: http-port
+          resources:
+            limits:
+              memory: "800Mi"
+              cpu: "400m"
+            requests:
+              memory: "400Mi"
+              cpu: "200m"
+      imagePullSecrets:
+      - name: docker-credentials
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: email-parse-svc
+  namespace: email-parse
+# If you are running in a cloud environment where external load balancers are
+# not allowed, uncomment the next section. The annotation listed below is
+# specific to AWS; if you are using another provider, please put the annotation
+# appropriate for your provider.
+#
+# You will likely have further configuration to do in order to make the
+# application available. For AWS, you can create a Route53 record for your
+# hosted zone pointing to your load balancer.
+#
+#  annotations:
+#    service.beta.kubernetes.io/aws-load-balancer-internal: "true"
+spec:
+  ports:
+    - port: 80
+      protocol: TCP
+      targetPort: 8080
+  selector:
+    name: email-parse
+  type: LoadBalancer
